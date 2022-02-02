@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
+const dbConfig = require('./databaseConfig')
 
 require('dotenv').config();
 
@@ -10,12 +11,22 @@ const port = process.env.PORT || 5000;
 app.use(cors()); // Cors middleware
 app.use(express.json());
 
-const uri = process.env.ATLAS_URI;
-mongoose.connect(uri, {useNewUrlParser: true});
-const connection = mongoose.connection;
-connection.once('open', () => {
-    console.log(`MongoDB database connection established successfully`);
-})
+
+// mongoose.connect(`mongodb://mongodb-service:27017/cloudl`, {useNewUrlParser: true})
+//     .then(() => console.log("MongoDB successfully connected"))
+//     .catch(err => console.log(err));
+
+mongoose.Promise = global.Promise;
+mongoose.connect(dbConfig.url, {
+    useNewUrlParser: true,
+    user: dbConfig.user,
+    pass: dbConfig.pwd
+}).then(() => {
+    console.log('successfully connected to the database');
+}).catch(err => {
+    console.log('error connecting to the database');
+    process.exit();
+});
 
 const usersRouter = require('./routes/users');
 const exercisesRouter = require('./routes/exercises');
